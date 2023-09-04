@@ -1,0 +1,21 @@
+{
+  "name": "node_graphql_socketio",
+  "version": "1.0.0",
+  "description": "Sistema de Votação em Tempo Real",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server-express": "^3.12.1",
+    "express": "^4.18.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^16.8.0",
+    "graphql-tools": "^9.0.0",
+    "socket.io": "^4.7.2"
+  }
+}

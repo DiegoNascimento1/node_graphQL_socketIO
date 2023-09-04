@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votação</title>
+</head>
+<body>
+    <h1>Sistema de Votação</h1>
+    <div id="questions-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:4000');
+
+        // Função para exibir as perguntas e opções
+        function renderQuestions(questions) {
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.innerHTML = '';
+
+            questions.forEach((question) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.innerHTML = `<h2>${question.text}</h2>`;
+                
+                question.options.forEach((option, index) => {
+                    questionDiv.innerHTML += `
+                        <label for="${question.id}-${index}">${option}</label>
+                        <input type="radio" id="${question.id}-${index}" name="${question.id}" value="${index}">
+                    `;
+                });
+
+                const voteButton = document.createElement('button');
+                voteButton.textContent = 'Votar';
+                voteButton.addEventListener('click', () => {
+                    const selectedOption = document.querySelector(`input[name="${question.id}"]:checked`);
+                    if (selectedOption) {
+                        const questionId = question.id;
+                        const optionIndex = parseInt(selectedOption.value);
+                        socket.emit('vote', { questionId, optionIndex });
+                    }
+                });
+
+                questionDiv.appendChild(voteButton);
+                questionsContainer.appendChild(questionDiv);
+            });
+        }
+
+        // Ouça atualizações de perguntas em tempo real
+        socket.on('newQuestion', (updatedQuestions) => {
+            renderQuestions(updatedQuestions);
+        });
+
+        // Solicite as perguntas iniciais do servidor GraphQL
+        fetch('http://localhost:4000/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: `
+                    {
+                        questions {
+                            id
+                            text
+                            options
+                        }
+                    }
+                `,
+            }),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            const initialQuestions = data.data.questions;
+            renderQuestions(initialQuestions);
+        });
+    </script>
+</body>
+</html>
